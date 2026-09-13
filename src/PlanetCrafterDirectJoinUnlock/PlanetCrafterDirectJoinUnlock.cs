@@ -12,7 +12,7 @@ namespace PlanetCrafterDirectJoinUnlock
     {
         public const string PluginGuid = "net.justtoclayrify.planetcrafter.directjoinunlock";
         public const string PluginName = "Planet Crafter Direct Join Unlock";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "1.1.0";
 
         internal static ManualLogSource Log;
 
@@ -24,7 +24,7 @@ namespace PlanetCrafterDirectJoinUnlock
             Logger.LogInfo("Loaded Planet Crafter Direct Join Unlock.");
         }
 
-        internal static void ApplyJoinMenuState(object instance)
+        internal static void ApplyDualJoinMenuState(object instance)
         {
             if (instance == null)
             {
@@ -35,64 +35,62 @@ namespace PlanetCrafterDirectJoinUnlock
             {
                 var instanceType = instance.GetType();
                 var multiplayerButtonField = AccessTools.Field(instanceType, "multiplayerButton");
-                var joinCodeMenuField = AccessTools.Field(instanceType, "multiplayerJoindCodeMenu");
-
                 var multiplayerButton = multiplayerButtonField == null ? null : multiplayerButtonField.GetValue(instance) as GameObject;
-                var joinCodeMenu = joinCodeMenuField == null ? null : joinCodeMenuField.GetValue(instance) as GameObject;
 
                 if (multiplayerButton != null && !multiplayerButton.activeSelf)
                 {
                     multiplayerButton.SetActive(true);
-                    Log.LogInfo("Enabled direct-address multiplayer button.");
-                }
-
-                if (joinCodeMenu != null && joinCodeMenu.activeSelf)
-                {
-                    joinCodeMenu.SetActive(false);
-                    Log.LogInfo("Disabled invite-code join menu.");
+                    Log.LogInfo("Enabled the direct-address multiplayer button alongside the standard invite-code flow.");
                 }
             }
             catch (Exception ex)
             {
-                Log.LogError("Failed to toggle join menus: " + ex);
+                Log.LogError("Failed to enable the direct-address multiplayer button: " + ex);
             }
         }
 
-        internal static void ForceOfflineDirectJoinMode()
+        internal static void PrepareDirectJoinMode()
         {
             try
             {
-                var managersType = AccessTools.TypeByName("SpaceCraft.Managers");
-                var savedDataHandlerType = AccessTools.TypeByName("SpaceCraft.SavedDataHandler");
-                if (managersType == null || savedDataHandlerType == null)
-                {
-                    return;
-                }
-
-                var genericGetManager = AccessTools.Method(managersType, "GetManager");
-                if (genericGetManager == null)
-                {
-                    return;
-                }
-
-                var getManager = genericGetManager.MakeGenericMethod(savedDataHandlerType);
-                var savedData = getManager.Invoke(null, null);
+                var savedData = GetSavedDataHandler();
                 if (savedData == null)
                 {
                     return;
                 }
 
-                var setOnlineGame = AccessTools.Method(savedDataHandlerType, "set_onlineGame");
-                if (setOnlineGame != null)
+                var setOnlineGame = AccessTools.Method(savedData.GetType(), "set_onlineGame");
+                if (setOnlineGame == null)
                 {
-                    setOnlineGame.Invoke(savedData, new object[] { false });
-                    Log.LogInfo("Forced direct join into offline/UnityTransport mode.");
+                    return;
                 }
+
+                setOnlineGame.Invoke(savedData, new object[] { false });
+                Log.LogInfo("Prepared the direct-address join path without changing Steam or invite-code joining.");
             }
             catch (Exception ex)
             {
-                Log.LogError("Failed to force offline direct join mode: " + ex);
+                Log.LogError("Failed to prepare the direct-address join path: " + ex);
             }
+        }
+
+        private static object GetSavedDataHandler()
+        {
+            var managersType = AccessTools.TypeByName("SpaceCraft.Managers");
+            var savedDataHandlerType = AccessTools.TypeByName("SpaceCraft.SavedDataHandler");
+            if (managersType == null || savedDataHandlerType == null)
+            {
+                return null;
+            }
+
+            var genericGetManager = AccessTools.Method(managersType, "GetManager");
+            if (genericGetManager == null)
+            {
+                return null;
+            }
+
+            var getManager = genericGetManager.MakeGenericMethod(savedDataHandlerType);
+            return getManager.Invoke(null, null);
         }
 
         [HarmonyPatch]
@@ -106,7 +104,7 @@ namespace PlanetCrafterDirectJoinUnlock
 
             private static void Postfix(object __instance)
             {
-                ApplyJoinMenuState(__instance);
+                ApplyDualJoinMenuState(__instance);
             }
         }
 
@@ -121,7 +119,7 @@ namespace PlanetCrafterDirectJoinUnlock
 
             private static void Postfix(object __instance)
             {
-                ApplyJoinMenuState(__instance);
+                ApplyDualJoinMenuState(__instance);
             }
         }
 
@@ -136,7 +134,7 @@ namespace PlanetCrafterDirectJoinUnlock
 
             private static void Prefix()
             {
-                ForceOfflineDirectJoinMode();
+                PrepareDirectJoinMode();
             }
         }
     }

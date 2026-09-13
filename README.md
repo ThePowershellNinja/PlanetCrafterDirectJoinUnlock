@@ -1,24 +1,42 @@
 # Planet Crafter Direct Join Unlock
 
-Planet Crafter Direct Join Unlock is a small **client-side BepInEx plugin** for **The Planet Crafter**. It re-enables the game's direct-address join flow so players can connect to a server by IP or address instead of being forced through the invite-code-only UI.
+Planet Crafter Direct Join Unlock is a small **client-side BepInEx plugin** for **The Planet Crafter** that keeps the game's **direct-address/direct-IP join path** available **without removing the normal Steam/invite-code join flow**.
+
+On Steam-enabled installs, the base game normally hides the direct-address button and shows only the invite-code join UI. This plugin restores the direct-address option as an **additional** path, so players can choose either:
+
+- the normal **Steam / invite-code** path
+- the separate **direct IP / direct address** path
 
 This repository includes:
 
 - the mod source under `src/PlanetCrafterDirectJoinUnlock/`
 - a prebuilt package under `package/BepInEx/plugins/PlanetCrafterDirectJoinUnlock/`
-- build instructions that use configurable paths instead of hard-coded machine-specific locations
+- portable build instructions with no machine-specific absolute paths
 
-This repo does **not** vendor the full BepInEx distribution or a temporary .NET SDK tree.
+This repo does **not** bundle the full BepInEx distribution or a temporary .NET SDK tree.
 
 ## What the mod actually changes
 
-The plugin patches the game's menu flow with Harmony and does three specific things:
+The plugin patches the game's existing menu flow with Harmony and makes three focused changes:
 
-1. Forces the main menu's multiplayer/direct-join button to stay visible.
-2. Forces the invite-code join menu to stay hidden when the main menu opens or refreshes.
-3. Before the game runs the join action, forces the internal saved-data `onlineGame` flag to `false` so the direct join flow uses the offline/UnityTransport path.
+1. It forces the built-in **direct-address multiplayer button** to remain visible, even when Steam is initialized.
+2. It **does not hide or replace** the normal Steam/invite-code join UI.
+3. When the player uses the direct-address form, it sets `SavedDataHandler.onlineGame = false` **only for that direct-address join action**, so the game uses the offline/direct UnityTransport path for that join.
 
-It does **not** add a new UI, a server browser, or a hosting tool. It only unlocks the direct join path that the existing game code already contains.
+It does **not** add a server browser, a host tool, or a custom networking stack. It only unlocks and preserves the game's existing two join paths.
+
+## How the two join paths behave
+
+| Path | How to use it | What the plugin does |
+| --- | --- | --- |
+| Steam / invite-code join | Use the built-in invite-code join UI on the main menu | Leaves it alone; the game continues to use the online/Steam-style join flow |
+| Direct IP / direct address join | Click the separate multiplayer/direct-address button, then enter the server address | Makes that button visible and forces `onlineGame = false` only for that direct join |
+
+In short:
+
+- **Steam join remains available**
+- **invite-code join remains available**
+- **direct IP join becomes available alongside them**
 
 ## Repository layout
 
@@ -102,13 +120,14 @@ If the `PlanetCrafterDirectJoinUnlock` folder does not exist yet under `BepInEx\
 
 1. Start **The Planet Crafter** normally.
 2. Let BepInEx load the plugin.
-3. Open the main menu and look at the multiplayer/join entry points.
+3. Return to the main menu and look at the multiplayer/join options.
 
-Expected behavior:
+On a Steam-enabled install, the expected result is:
 
-- the direct multiplayer/direct join button should be visible
-- the invite-code join menu should not stay open on the main menu
-- using the join action should use the mod's forced offline-direct join mode before the game continues the join flow
+- the normal **invite-code join UI** is still present
+- the separate **direct-address multiplayer button** is also visible
+- using the invite-code UI should continue the normal online/Steam join path
+- using the direct-address button should open the direct join form and use the offline/direct path for that join only
 
 If BepInEx loaded the plugin successfully, `BepInEx\LogOutput.log` should contain:
 
@@ -116,15 +135,22 @@ If BepInEx loaded the plugin successfully, `BepInEx\LogOutput.log` should contai
 Loaded Planet Crafter Direct Join Unlock.
 ```
 
+When the direct-address path is used, the log should also contain:
+
+```text
+Prepared the direct-address join path without changing Steam or invite-code joining.
+```
+
 ## Join flow behavior to expect
 
 This plugin is intentionally small and specific. The observable behavior should be:
 
-- **Direct IP join availability:** the direct-address multiplayer button is enabled if the game had hidden it.
-- **Offline-direct join mode:** when the game's join action runs, the plugin flips the internal saved-data `onlineGame` flag to `false`.
-- **Join menu behavior:** the invite-code join screen is hidden whenever the intro/main menu initializes or reopens.
+- **Join menu behavior:** the Steam/invite-code menu stays visible instead of being replaced.
+- **Direct join availability:** the direct-address multiplayer button stays visible so players can open the IP/address join form.
+- **Offline-direct join mode:** `onlineGame` is forced to `false` only when the direct-address join button is used.
+- **Steam flow preservation:** invite-code joining is left on the game's normal online path.
 
-If your workflow depends on a different menu, browser, or host flow, this plugin does not implement that.
+If your workflow depends on a server browser, a new menu, or a different network backend, this plugin does not implement that.
 
 ## Troubleshooting
 
@@ -134,11 +160,20 @@ If your workflow depends on a different menu, browser, or host flow, this plugin
 - Make sure you installed **BepInEx 5 x64**, not a different platform build.
 - Check `BepInEx\LogOutput.log` for load errors.
 
-### The direct join button is still missing
+### The direct-address button is still missing
 
 - Make sure BepInEx actually loaded the plugin.
-- Test with only this plugin installed to rule out another mod overriding the same UI.
+- Check the log for `Enabled the direct-address multiplayer button alongside the standard invite-code flow.`
+- Test with only this plugin installed to rule out another mod overriding the same intro UI.
 - Reopen the game after copying the DLL; BepInEx plugins are not hot-loaded into a running game session.
+
+### Invite-code joining stopped working
+
+This plugin no longer hides or replaces the invite-code flow. If invite-code joining stops working anyway:
+
+- test with only this plugin enabled
+- review `BepInEx\LogOutput.log` for exceptions from other mods
+- remove this plugin temporarily and compare behavior against a clean BepInEx install
 
 ### The wrong folder was used
 
@@ -158,7 +193,7 @@ When reporting the problem, include your game version and relevant lines from `B
 
 ## Build from source
 
-The project file is set up to be portable: it does not contain hard-coded absolute paths to one workstation.
+The project file is portable: it does not contain hard-coded absolute paths to one workstation.
 
 To build from source, you need:
 
