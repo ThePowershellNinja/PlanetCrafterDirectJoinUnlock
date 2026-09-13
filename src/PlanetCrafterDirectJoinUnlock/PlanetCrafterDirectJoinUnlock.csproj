@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>PlanetCrafterDirectJoinUnlock</AssemblyName>
+    <RootNamespace>PlanetCrafterDirectJoinUnlock</RootNamespace>
+    <BepInExCoreDir Condition="'$(BepInExCoreDir)' == ''"></BepInExCoreDir>
+    <PlanetCrafterManagedDir Condition="'$(PlanetCrafterManagedDir)' == ''"></PlanetCrafterManagedDir>
+    <OutputPath>$(MSBuildProjectDirectory)\..\..\package\BepInEx\plugins\PlanetCrafterDirectJoinUnlock\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <Target Name="ValidateBuildInputs" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(BepInExCoreDir)' == ''" Text="Set BepInExCoreDir to the folder that contains BepInEx.dll and 0Harmony.dll." />
+    <Error Condition="'$(PlanetCrafterManagedDir)' == ''" Text="Set PlanetCrafterManagedDir to the Planet Crafter_Data\Managed folder from your local game install." />
+    <Error Condition="!Exists('$(BepInExCoreDir)\BepInEx.dll')" Text="Could not find BepInEx.dll under '$(BepInExCoreDir)'." />
+    <Error Condition="!Exists('$(BepInExCoreDir)\0Harmony.dll')" Text="Could not find 0Harmony.dll under '$(BepInExCoreDir)'." />
+    <Error Condition="!Exists('$(PlanetCrafterManagedDir)\UnityEngine.dll')" Text="Could not find UnityEngine.dll under '$(PlanetCrafterManagedDir)'." />
+    <Error Condition="!Exists('$(PlanetCrafterManagedDir)\UnityEngine.CoreModule.dll')" Text="Could not find UnityEngine.CoreModule.dll under '$(PlanetCrafterManagedDir)'." />
+  </Target>
+
+  <ItemGroup>
+    <Compile Include="PlanetCrafterDirectJoinUnlock.cs" />
+    <Reference Include="BepInEx">
+      <HintPath>$(BepInExCoreDir)\BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(BepInExCoreDir)\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(PlanetCrafterManagedDir)\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(PlanetCrafterManagedDir)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>
