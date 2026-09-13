@@ -12,6 +12,7 @@ This repository includes:
 - the mod source under `src/PlanetCrafterDirectJoinUnlock/`
 - a prebuilt package under `package/BepInEx/plugins/PlanetCrafterDirectJoinUnlock/`
 - portable build instructions with no machine-specific absolute paths
+- GitHub Releases for users who just want the packaged plugin ZIP
 
 This repo does **not** bundle the full BepInEx distribution or a temporary .NET SDK tree.
 
@@ -51,7 +52,7 @@ To use the mod on Windows, you need:
 
 - a working install of **The Planet Crafter**
 - **BepInEx 5 x64** installed into the game folder
-- the plugin files from this repository
+- the packaged plugin release from this repository
 
 ## Find The Planet Crafter install folder in Steam
 
@@ -92,7 +93,50 @@ After BepInEx is installed, the plugin destination folder will be:
 <The Planet Crafter>\BepInEx\plugins\
 ```
 
-## Install this plugin manually
+## Install this plugin from the packaged release
+
+For most users, the easiest install method is the packaged ZIP from the GitHub Releases page.
+
+1. Open the repository's **Releases** page:
+
+   ```text
+   https://github.com/ThePowershellNinja/PlanetCrafterDirectJoinUnlock/releases
+   ```
+
+2. Download the latest packaged asset:
+
+   ```text
+   PlanetCrafterDirectJoinUnlock-v1.0.0.zip
+   ```
+
+3. Open the ZIP file.
+4. Extract the ZIP contents directly into your **The Planet Crafter** game folder.
+5. When prompted, allow the ZIP to merge into the existing `BepInEx\` folder that you installed earlier.
+
+The release ZIP is packaged so that its internal folder structure already matches the game folder layout:
+
+```text
+BepInEx\
+  plugins\
+    PlanetCrafterDirectJoinUnlock\
+      PlanetCrafterDirectJoinUnlock.dll
+      PlanetCrafterDirectJoinUnlock.deps.json
+      PlanetCrafterDirectJoinUnlock.pdb
+```
+
+That means you should extract the ZIP into the folder that contains `Planet Crafter.exe`, not into some separate temporary `mods` directory.
+
+## Exact installed file path
+
+After extracting the packaged release, the most important installed file should be here:
+
+```text
+<The Planet Crafter>\BepInEx\plugins\PlanetCrafterDirectJoinUnlock\PlanetCrafterDirectJoinUnlock.dll
+```
+
+If that file is not present in that exact folder, the plugin is not installed correctly.
+
+## Install this plugin from a repository checkout instead
 
 This repository already includes a packaged build under:
 
@@ -103,12 +147,13 @@ package\BepInEx\plugins\PlanetCrafterDirectJoinUnlock\
 To install it:
 
 1. Open this repository's `package\BepInEx\plugins\PlanetCrafterDirectJoinUnlock\` folder.
-2. Copy `PlanetCrafterDirectJoinUnlock.dll` into your game's BepInEx plugins folder.
-3. If you want the packaged files to match the repository package exactly, also copy:
+2. Copy the files into your game's BepInEx plugins folder.
+3. To match the packaged release layout exactly, copy:
    - `PlanetCrafterDirectJoinUnlock.deps.json`
    - `PlanetCrafterDirectJoinUnlock.pdb`
+   - `PlanetCrafterDirectJoinUnlock.dll`
 
-The **exact destination path** for the plugin DLL is:
+The exact destination path for the plugin DLL is:
 
 ```text
 <The Planet Crafter>\BepInEx\plugins\PlanetCrafterDirectJoinUnlock\PlanetCrafterDirectJoinUnlock.dll
@@ -241,3 +286,9 @@ After building, copy the generated files into:
 ```text
 <The Planet Crafter>\BepInEx\plugins\PlanetCrafterDirectJoinUnlock\
 ```
+
+## License
+
+This project is licensed under the **GNU General Public License v3.0**.
+
+See [LICENSE](LICENSE) for the full license text.
